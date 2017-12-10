@@ -1,5 +1,4 @@
 from typing import List, Union, Optional, Tuple
-
 import numpy as np
 
 Dimensions = Union[List[int], None, np.ndarray]
@@ -45,19 +44,11 @@ class DataSet:
         x_new = self.x.reshape((-1, np.prod(self.dim_x)))
         return DataSet(x_new, self.y)
 
-    def get_y_1hot(self):
-        n_class = self.get_y_categories().ravel().shape[0]
-        y_ = np.eye(n_class)[self.y.astype(np.int8).ravel()]
-        return y_
-
-    def get_y_categories(self):
-        return np.unique(self.y.ravel())
-
     def get_x_by_y(self, y):
         idx = np.ravel(self.y == y)
         return self.x[idx, :]
 
-    def subset(self, index: Union[np.ndarray, int, List],
+    def subset(self, index: Union[np.ndarray, int, List, slice],
                shuffle: bool= False) -> 'DataSet':
         return DataSet(self.x[index, :], self.y[index, :], shuffle=shuffle)
 
@@ -107,4 +98,14 @@ class DataSet:
             return self
         else:
             return self.__add__(d2, shuffle=shuffle)
+
+
+class CategoricalDataSet(DataSet):
+    def get_y_1hot(self):
+        n_class = self.get_y_categories().ravel().shape[0]
+        y_ = np.eye(n_class)[self.y.astype(np.int8).ravel()]
+        return y_
+
+    def get_y_categories(self):
+        return np.unique(self.y.ravel())
 

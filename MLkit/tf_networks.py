@@ -1,22 +1,30 @@
 import tensorflow as tf
+from tensorflow import Tensor, Variable
 from tensorflow.contrib import slim
 import tensorflow.contrib.layers as cl
-from typing import Tuple, Union
+from typing import Tuple, List, Optional, Callable
 
 
-def xavier_init(size: Tuple[int, int]):
+def xavier_init(size: Tuple[int, int]) -> Tensor:
     in_dim = float(size[0])
     xavier_stddev = 1. / tf.sqrt(in_dim / 2.)
     return tf.truncated_normal(shape=size, stddev=xavier_stddev)
 
 
-def flatten(_input: tf.Tensor):
+def scewl(logits: Tensor, labels: Tensor) -> Tensor:
+    # A hacky wrapper of tf.nn.sigmoid_cross_entropy_with_logits
+    return tf.nn.sigmoid_cross_entropy_with_logits(
+        logits=logits,
+        labels=labels)
+
+
+def flatten(_input: Tensor) -> Tensor:
     print('Unfinished')
     dim = tf.reduce_prod(tf.shape(_input)[1:])
     return tf.reshape(_input, [-1, dim])
 
 
-def simple_net(_in, n_in, n_out, n_hidden=128):
+def simple_net(_in, n_in, n_out, n_hidden=128) -> Tensor:
     _W1 = tf.get_variable('W1', initializer=xavier_init((n_in, n_hidden)))
     _b1 = tf.get_variable('b1', initializer=tf.zeros(shape=[n_hidden]))
 
@@ -28,7 +36,7 @@ def simple_net(_in, n_in, n_out, n_hidden=128):
     return _logit
 
 
-def layer_dense(_in, n_out, scope_name):
+def layer_dense(_in: Tensor, n_out: int, scope_name: str) -> Tensor:
     with tf.variable_scope(scope_name):
         _in_dim = int(_in.get_shape()[-1])
         _W = tf.get_variable('W', shape=(_in_dim, n_out),
@@ -37,11 +45,12 @@ def layer_dense(_in, n_out, scope_name):
     return tf.matmul(_in, _W) + _b
 
 
-def dense_net(z, n_units,
-              activation_fn=tf.nn.relu,
-              drop_out: Union[None, float] = None,
-              batch_norm=False,
-              is_train=False):
+def dense_net(z: Tensor,
+              n_units: List[int],
+              activation_fn: Callable[[Tensor], Tensor] = tf.nn.relu,
+              drop_out: Optional[float] = None,
+              batch_norm: bool = False,
+              is_train: bool = False) -> Tensor:
     _flow = z
     for i, n in enumerate(n_units[:-1]):
         _flow = activation_fn(layer_dense(_flow, n, 'fc' + str(i)))
@@ -53,7 +62,7 @@ def dense_net(z, n_units,
     return _flow
 
 
-def le_conv(x__: tf.Tensor, n_out: int):
+def le_conv(x__: Tensor, n_out: int) -> Tensor:
     net = tf.layers.conv2d(x__, 20, 5, activation=tf.nn.relu, name='conv1')
     net = tf.layers.max_pooling2d(net, 2, 1, name='pool1')
     net = tf.layers.conv2d(net, 50, 5, activation=tf.nn.relu, name='conv2')
