@@ -20,3 +20,7 @@ class Add1(th.nn.Module):
 
 
 add1 = Add1()
+
+
+def accuracy(_y, _y_hat):
+    return th.mean(th.eq(_y.view(-1), _y_hat.view(-1)).float())
