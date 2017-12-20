@@ -112,9 +112,16 @@ class CategoricalDataSet(DataSet):
             self.get_y_1hot()[:, :, np.newaxis] * np.array(
                 [self.class_colors])).sum(axis=1)
 
+    @classmethod
+    def from_1hot(cls,
+                  x: np.ndarray,
+                  y: np.ndarray, *args, **kwargs):
+        y_dense = y @ np.arange(y.shape[1])[:, np.newaxis]
+        return cls(x=x, y=y_dense, *args, **kwargs)
+
     def get_sign_encoded_y(self):
         assert self.n_classes == 2
-        return self.y*2 - 1
+        return self.y * 2 - 1
 
     def get_y_1hot(self):
         if self.n_classes == 1:
