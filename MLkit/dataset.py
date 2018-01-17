@@ -1,6 +1,7 @@
 from typing import List, Union, Optional, Tuple
 import numpy as np
 from MLkit.color import get_color_gen
+from enum import Enum, auto
 
 Dimensions = Union[List[int], None, np.ndarray]
 DataSetType = Union['DataSet', 'CategoricalDataSet']
@@ -51,18 +52,28 @@ class DataSet:
         return self.x[idx, :]
 
     def subset(self, index: Union[np.ndarray, int, List, slice],
+               name_mod: str = 'subset',
                shuffle: bool = False) -> DataSetType:
-        return type(self)(self.x[index, :], self.y[index, :], shuffle=shuffle)
+        return type(self)(self.x[index, :],
+                          self.y[index, :],
+                          shuffle=shuffle,
+                          name=self.name + '_' + name_mod)
 
-    def sample(self, size):
+    def sample(self, size, name_mod: str = 'sample'):
         _idx = np.random.randint(self.n_samples, size=size)
-        return self.subset(_idx, shuffle=True)
+        return self.subset(_idx, name_mod=name_mod, shuffle=True)
 
-    def random_split(self, ratio):
+    def random_split(self, ratio,
+                     name_mods: Optional[Tuple[str, str]] = None):
         part_1_size = int(ratio * self.n_samples)
         part_1_idx = np.random.choice(self.n_samples, size=part_1_size, replace=False)
         part_2_idx = [i for i in range(self.n_samples) if i not in part_1_idx]
-        return self.subset(part_1_idx), self.subset(part_2_idx)
+        if name_mods is None:
+            return (self.subset(part_1_idx),
+                    self.subset(part_2_idx))
+        else:
+            return (self.subset(part_1_idx, name_mods[0]),
+                    self.subset(part_2_idx, name_mods[1]))
 
     def next_batch(self, mb_size: int,
                    progress: Tuple[int, int]) -> (Tuple[int, int], DataSetType):
@@ -102,10 +113,27 @@ class DataSet:
             return self.__add__(d2, shuffle=shuffle)
 
 
+class Encoding(Enum):
+    T_1HOT = auto()
+    T_SIGN = auto()
+    T_DENSE = auto()
+
+
 class CategoricalDataSet(DataSet):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args,
+                 y_encoding: Encoding = Encoding.T_DENSE,
+                 **kwargs):
         super().__init__(*args, **kwargs)
-        self.n_classes = self.get_y_categories().ravel().shape[0]
+        self.y_encoding = y_encoding
+        if y_encoding == Encoding.T_DENSE:
+            self.n_classes = self.get_y_categories().ravel().shape[0]
+        elif y_encoding == Encoding.T_1HOT:
+            self.n_classes = self.y.shape[-1]
+        elif y_encoding == Encoding.T_SIGN:
+            self.n_classes = 2
+        else:
+            raise ValueError("Encoding must be one of the encoding type")
+
         color_gen = get_color_gen()
         self.class_colors = [next(color_gen) for c in range(self.n_classes)]
         self.c = (
@@ -121,17 +149,46 @@ class CategoricalDataSet(DataSet):
 
     def get_sign_encoded_y(self):
         assert self.n_classes == 2
+        assert self.y_encoding == Encoding.T_DENSE
         return self.y * 2 - 1
 
+    def update_y_sign_encoded(self):
+        assert self.n_classes == 2
+        assert self.y_encoding == Encoding.T_DENSE
+        return type(self)(self.x,
+                          self.get_sign_encoded_y(),
+                          y_encoding=Encoding.T_SIGN,
+                          shuffle=False)
+
     def get_y_1hot(self):
-        if self.n_classes == 1:
+        if self.y_encoding == Encoding.T_1HOT:
             return self.y
-        else:
-            y_ = np.eye(self.n_classes)[self.y.astype(np.int8).ravel()]
+        elif self.y_encoding == Encoding.T_DENSE:
+            if self.n_classes == 1:
+                return self.y
+            else:
+                y_ = np.eye(self.n_classes)[self.y.astype(np.int8).ravel()]
+                return y_
+        else:  # self.y_encoding == Encoding.T_SIGN
+            y_d = (self.y + 1) / 2
+            y_ = np.eye(self.n_classes)[y_d.astype(np.int8).ravel()]
             return y_
 
     def update_y_1hot(self):
-        return type(self)(self.x, self.get_y_1hot(), shuffle=False)
+        return type(self)(self.x,
+                          self.get_y_1hot(),
+                          y_encoding=Encoding.T_1HOT,
+                          shuffle=False)
 
     def get_y_categories(self):
+        assert self.y_encoding == Encoding.T_DENSE
         return np.unique(self.y.ravel())
+
+    def subset(self, index: Union[np.ndarray, int, List, slice],
+               name_mod: str = 'subset',
+               shuffle: bool = False) -> DataSetType:
+        return type(self)(self.x[index, :],
+                          self.y[index, :],
+                          shuffle=shuffle,
+                          y_encoding=self.y_encoding,
+                          name=self.name + '_' + name_mod)

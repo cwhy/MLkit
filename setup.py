@@ -9,5 +9,5 @@ setup(
     author='CWhy',
     author_email='chenyu.nus@gmail.com',
     description='Some home-brew tools for machine learning',
-    requires=['numpy', 'tensorflow', 'torch', 'toml']
+    requires=['numpy', 'tensorflow', 'torch', 'toml', 'matplotlib']
 )
