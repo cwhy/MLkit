@@ -5,7 +5,7 @@ From toy_data:
 """
 
 import colorsys
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 import numpy as np
 import numpy.random as rnd
@@ -26,9 +26,10 @@ color_loop = [
 
 ColorF = Tuple[float, float, float]
 ColorInt = Tuple[int, int, int]
+Color = Union[ColorF, ColorInt]
 
 
-def get_color_gen(return_float:bool=True):
+def get_color_gen(return_float: bool = True) -> Color:
     i = -1
     while True:
         i += 1

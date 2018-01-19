@@ -30,8 +30,8 @@ class DataSet:
             self.x = x
             self.y = y
 
-        self.dim_x = np.asscalar(np.prod(x.shape[1:]))
-        self.dim_y = np.asscalar(np.prod(y.shape[1:]))
+        self.dim_x = int(np.asscalar(np.prod(x.shape[1:])))
+        self.dim_y = int(np.asscalar(np.prod(y.shape[1:])))
 
         if dim_X is not None:
             self.dim_X = list(dim_X)
@@ -44,7 +44,7 @@ class DataSet:
             self.dim_Y = [self.dim_y]
 
     def flatten_x(self) -> DataSetType:
-        x_new = self.x.reshape((-1, np.prod(self.dim_x)))
+        x_new = self.x.reshape([-1, self.dim_x])
         return type(self)(x_new, self.y)
 
     def get_x_by_y(self, y):
@@ -52,14 +52,18 @@ class DataSet:
         return self.x[idx, :]
 
     def subset(self, index: Union[np.ndarray, int, List, slice],
-               name_mod: str = 'subset',
+               name_mod: Optional[str] = 'subset',
                shuffle: bool = False) -> DataSetType:
+        if name_mod is None:
+            new_name = self.name
+        else:
+            new_name = self.name + '_' + name_mod
         return type(self)(self.x[index, :],
                           self.y[index, :],
                           shuffle=shuffle,
-                          name=self.name + '_' + name_mod)
+                          name=new_name)
 
-    def sample(self, size, name_mod: str = 'sample'):
+    def sample(self, size, name_mod: Optional[str] = 'sample'):
         _idx = np.random.randint(self.n_samples, size=size)
         return self.subset(_idx, name_mod=name_mod, shuffle=True)
 
@@ -140,12 +144,12 @@ class CategoricalDataSet(DataSet):
             self.get_y_1hot()[:, :, np.newaxis] * np.array(
                 [self.class_colors])).sum(axis=1)
 
-    @classmethod
-    def from_1hot(cls,
-                  x: np.ndarray,
-                  y: np.ndarray, *args, **kwargs):
-        y_dense = y @ np.arange(y.shape[1])[:, np.newaxis]
-        return cls(x=x, y=y_dense, *args, **kwargs)
+    # @classmethod
+    # def from_1hot(cls,
+    #               x: np.ndarray,
+    #               y: np.ndarray, *args, **kwargs):
+    #     y_dense = y @ np.arange(y.shape[1])[:, np.newaxis]
+    #     return cls(x=x, y=y_dense, *args, **kwargs)
 
     def get_sign_encoded_y(self):
         assert self.n_classes == 2
@@ -185,10 +189,14 @@ class CategoricalDataSet(DataSet):
         return np.unique(self.y.ravel())
 
     def subset(self, index: Union[np.ndarray, int, List, slice],
-               name_mod: str = 'subset',
-               shuffle: bool = False) -> DataSetType:
+               name_mod: Optional[str] = 'subset',
+               shuffle: bool = False) -> 'CategoricalDataSet':
+        if name_mod is None:
+            new_name = self.name
+        else:
+            new_name = self.name + '_' + name_mod
         return type(self)(self.x[index, :],
                           self.y[index, :],
                           shuffle=shuffle,
                           y_encoding=self.y_encoding,
-                          name=self.name + '_' + name_mod)
+                          name=new_name)
