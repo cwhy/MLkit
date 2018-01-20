@@ -36,18 +36,19 @@ def visualize_data_2D(_data: CategoricalDataSet,
 
 def watch_data_2D(init_data: CategoricalDataSet,
                   size: Tuple[int, int] = (6, 6)
-                  ) -> Tuple[Figure, Callable[[CategoricalDataSet], None]]:
+                  ) -> Tuple[AxesSubplot, Callable[[CategoricalDataSet], None]]:
     _fig, _ax = plt.subplots(nrows=1,
                              ncols=1,
                              figsize=size)
     _, handle = _scatter_2D(init_data, _ax, sample=None)
+    _fig.canvas.draw()
 
     def update(new_data: CategoricalDataSet):
         _x_in = new_data.x
         handle.set_offsets(_x_in[:, 0:2])
         _fig.canvas.draw()
 
-    return _fig, update
+    return _ax, update
 
 
 def visualize_data_2D_grid(_datas: List[CategoricalDataSet],

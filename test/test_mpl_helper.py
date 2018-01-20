@@ -29,7 +29,6 @@ if test_watch:
         print(shuffle_set(data).y.T)
 
 test_bounded_line = True
-import weakref
 
 if test_bounded_line:
     plt.ion()
@@ -41,18 +40,18 @@ if test_bounded_line:
     l = bounded_line([1, 20], [6, 70], ax)
 
 
-    def update_line(p1, p2):
-        if l is not None:
-            l.remove()
-        _l = bounded_line(p1, p2, ax)
+    def update_line(p1, p2, _l):
+        if _l is not None:
+            _l.remove()
+        new_l = bounded_line(p1, p2, ax)
         fig.canvas.draw()
-        return _l
+        return new_l
 
 
     for _ in range(10):
         p1 = np.random.rand(2)
         p2 = np.random.rand(2)
-        l = update_line(p1, p2)
+        l = update_line(p1, p2, l)
         if l is None:
             print("Outside")
         plt.pause(0.2)
