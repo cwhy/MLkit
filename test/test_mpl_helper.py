@@ -29,23 +29,44 @@ if test_watch:
         print(shuffle_set(data).y.T)
 
 test_bounded_line = True
+import weakref
+
 if test_bounded_line:
     plt.ion()
     fig, ax = plt.subplots()
-    x = np.linspace(0, 10)
+    x = np.linspace(0, 1)
     y = x ** 2
     plt.plot(x, y)
     plt.show()
     l = bounded_line([1, 20], [6, 70], ax)
 
 
-    def test(p1, p2):
-        l = bounded_line(p1, p2, ax)
+    def update_line(p1, p2):
+        if l is not None:
+            l.remove()
+        _l = bounded_line(p1, p2, ax)
         fig.canvas.draw()
-        return l
+        return _l
 
-    l = test([6, 40], [8, 20])
-    l = test([7, 20], [6, 70])
-    l = test([6, 20], [6, 70])
-    l = test([6, 20], [8, 20])
-    l = test([6, 70], [8, 20])
+
+    for _ in range(10):
+        p1 = np.random.rand(2)
+        p2 = np.random.rand(2)
+        l = update_line(p1, p2)
+        if l is None:
+            print("Outside")
+        plt.pause(0.2)
+
+
+    def put_line(p1, p2):
+        bounded_line(p1, p2, ax)
+        fig.canvas.draw()
+
+
+    for _ in range(20):
+        p1 = np.random.rand(2)
+        p2 = np.random.rand(2)
+        put_line(p1, p2)
+    ax.set_ylim((ax.get_ylim()[0] - 1, ax.get_ylim()[1] + 1))
+    ax.set_xlim((ax.get_xlim()[0] - 1, ax.get_xlim()[1] + 1))
+    plt.pause(100)

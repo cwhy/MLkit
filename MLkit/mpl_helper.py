@@ -88,30 +88,43 @@ def visualize_data_2D_grid(_datas: List[CategoricalDataSet],
 
 def bounded_f_line(f: Callable[[float], float],
                    inv_f: Callable[[float], float],
-                   _ax: AxesSubplot, **kwargs) -> Line2D:
+                   _ax: AxesSubplot, **kwargs) -> Optional[Line2D]:
+    e = 0.000001
     x_min, x_max = _ax.get_xbound()
     y_min, y_max = _ax.get_ybound()
     fx_min = f(x_min)
     fx_max = f(x_max)
     fy_min = inv_f(y_min)
     fy_max = inv_f(y_max)
-    if x_min <= fy_min:
-        min_x, min_y = (x_min, fx_min)
+    x_range = [x_min, x_max]
+    y_range = [fx_min, fx_max]
+    in_range = True
+    if not (y_min - e <= fx_min <= y_max + e):
+        if x_max + e >= fy_max >= fy_min >= x_min - e:
+            x_range[0], y_range[0] = fy_min, y_min
+        elif x_max + e >= fy_min >= fy_max >= x_min - e:
+            x_range[0], y_range[0] = fy_max, y_max
+        else:
+            in_range = False
+    if not (y_min - e <= fx_max <= y_max + e):
+        if x_max + e >= fy_max >= fy_min >= x_min - e:
+            x_range[1], y_range[1] = fy_max, y_max
+        elif x_max + e >= fy_min >= fy_max >= x_min - e:
+            x_range[1], y_range[1] = fy_min, y_min
+        else:
+            in_range = False
+
+    if in_range:
+        line = Line2D(x_range, y_range, **kwargs)
+        _ax.add_line(line)
+        return line
     else:
-        min_x, min_y = (fy_min, y_min)
-    if x_max >= fy_max:
-        max_x, max_y = (x_max, fx_max)
-    else:
-        max_x, max_y = (fy_max, y_max)
-    line = Line2D([min_x, max_x],
-                  [min_y, max_y], **kwargs)
-    _ax.add_line(line)
-    return line
+        return None
 
 
 def bounded_line(p1: Vector, p2: Vector,
                  _ax: AxesSubplot,
-                 **kwargs) -> Line2D:
+                 **kwargs) -> Optional[Line2D]:
     if p2[0] == p1[0]:
         return _ax.axvline(x=p1[0])
     elif p2[1] == p1[1]:
