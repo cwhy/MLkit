@@ -1,3 +1,4 @@
+from abc import ABCMeta, abstractmethod
 from typing import List, Union, Optional, Tuple
 import numpy as np
 from MLkit.color import get_color_gen
@@ -63,7 +64,7 @@ class DataSet:
                           shuffle=shuffle,
                           name=new_name)
 
-    def sample(self, size, name_mod: Optional[str] = 'sample'):
+    def sample(self, size, name_mod: Optional[str] = 'sample') -> DataSetType:
         _idx = np.random.randint(self.n_samples, size=size)
         return self.subset(_idx, name_mod=name_mod, shuffle=True)
 
@@ -141,8 +142,8 @@ class CategoricalDataSet(DataSet):
         color_gen = get_color_gen()
         self.class_colors = [next(color_gen) for c in range(self.n_classes)]
         self.c = (
-            self.get_y_1hot()[:, :, np.newaxis] * np.array(
-                [self.class_colors])).sum(axis=1)
+                self.get_y_1hot()[:, :, np.newaxis] * np.array(
+            [self.class_colors])).sum(axis=1)
 
     # @classmethod
     # def from_1hot(cls,
@@ -200,3 +201,43 @@ class CategoricalDataSet(DataSet):
                           shuffle=shuffle,
                           y_encoding=self.y_encoding,
                           name=new_name)
+
+
+class BaseDataSet(metaclass=ABCMeta):
+
+    @property
+    @abstractmethod
+    def name(self):
+        pass
+
+    @property
+    @abstractmethod
+    def dim_X(self):
+        pass
+
+    @property
+    @abstractmethod
+    def dim_Y(self):
+        pass
+
+    @property
+    @abstractmethod
+    def dim_x(self):
+        pass
+
+    @property
+    @abstractmethod
+    def dim_y(self):
+        pass
+
+    @abstractmethod
+    def sample(self, mb_size, name_mod: Optional[str]) -> DataSetType:
+        pass
+
+
+class FixedDataSet(BaseDataSet):
+    @abstractmethod
+    def next_batch(self, mb_size: int,
+                   progress: Tuple[int, int]) -> (Tuple[int, int], DataSetType):
+        pass
+

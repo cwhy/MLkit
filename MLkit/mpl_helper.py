@@ -1,14 +1,33 @@
 import numpy as np
+import matplotlib as mpl
 from matplotlib.collections import PathCollection
 import matplotlib.pyplot as plt
 from MLkit.dataset import CategoricalDataSet
 from matplotlib.axes import Axes
+from matplotlib.image import AxesImage
 from matplotlib.lines import Line2D
 from matplotlib.figure import Figure
 from typing import Optional, Tuple, List, Callable, Union
 
 AxesSubplot = Axes
 Vector = Union[np.ndarray, List, Tuple]
+
+mpl.rcParams["font.sans-serif"] = ["Fira Sans", "Candara",
+                                   "Calibri", "Segoe", "Segoe UI",
+                                   "Optima", "Arial"]
+mpl.rcParams["font.family"] = "sans-serif"
+
+
+def visualize_matrix(mat: np.ndarray) -> Tuple[Figure, AxesSubplot, AxesImage]:
+    f, _ax = plt.subplots(figsize=(5, 5), dpi=600)
+    _ax.spines['left'].set_visible(False)
+    _ax.spines['bottom'].set_visible(False)
+    _ax.spines['right'].set_visible(False)
+    _ax.spines['top'].set_visible(False)
+    pt = _ax.matshow(mat, cmap="Greys")
+    cax = f.colorbar(pt, shrink=0.8, drawedges=False)
+    cax.outline.set_visible(False)
+    return f, _ax, pt
 
 
 def _scatter_2D(_data: CategoricalDataSet,
