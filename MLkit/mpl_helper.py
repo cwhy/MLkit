@@ -18,8 +18,9 @@ mpl.rcParams["font.sans-serif"] = ["Fira Sans", "Candara",
 mpl.rcParams["font.family"] = "sans-serif"
 
 
-def visualize_matrix(mat: np.ndarray) -> Tuple[Figure, AxesSubplot, AxesImage]:
-    f, _ax = plt.subplots(figsize=(5, 5), dpi=600)
+def visualize_matrix(mat: np.ndarray,
+                     dpi: int = 300) -> Tuple[Figure, AxesSubplot, AxesImage]:
+    f, _ax = plt.subplots(figsize=(5, 5), dpi=dpi)
     _ax.spines['left'].set_visible(False)
     _ax.spines['bottom'].set_visible(False)
     _ax.spines['right'].set_visible(False)

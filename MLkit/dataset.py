@@ -4,6 +4,13 @@ import numpy as np
 from MLkit.color import get_color_gen
 from enum import Enum, auto
 
+
+class Encoding(Enum):
+    T_1HOT = auto()
+    T_SIGN = auto()
+    T_DENSE = auto()
+
+
 Dimensions = Union[List[int], None, np.ndarray]
 DataSetType = Union['DataSet', 'CategoricalDataSet']
 
@@ -46,7 +53,7 @@ class DataSet:
 
     def flatten_x(self) -> DataSetType:
         x_new = self.x.reshape([-1, self.dim_x])
-        return type(self)(x_new, self.y)
+        return self.new(x_new, self.y, shuffle=True, name_mod='flattened')
 
     def get_x_by_y(self, y):
         idx = np.ravel(self.y == y)
@@ -55,14 +62,7 @@ class DataSet:
     def subset(self, index: Union[np.ndarray, int, List, slice],
                name_mod: Optional[str] = 'subset',
                shuffle: bool = False) -> DataSetType:
-        if name_mod is None:
-            new_name = self.name
-        else:
-            new_name = self.name + '_' + name_mod
-        return type(self)(self.x[index, :],
-                          self.y[index, :],
-                          shuffle=shuffle,
-                          name=new_name)
+        return self.new(self.x[index, :], self.y[index, :], shuffle, name_mod)
 
     def sample(self, size, name_mod: Optional[str] = 'sample') -> DataSetType:
         _idx = np.random.randint(self.n_samples, size=size)
@@ -93,6 +93,16 @@ class DataSet:
 
         return (epoch, marker), self.subset(_ids)
 
+    def new(self, x: np.ndarray, y: np.ndarray,
+            shuffle: bool, name_mod: Optional[str] = None) -> DataSetType:
+        if name_mod is None:
+            new_name = self.name
+        else:
+            new_name = self.name + '_' + name_mod
+        return DataSet(x, y,
+                       shuffle=shuffle,
+                       name=new_name)
+
     def __str__(self):
         property_str = ", ".join([f"dim_x={self.dim_x}",
                                   f"dim_y={self.dim_y}",
@@ -118,19 +128,17 @@ class DataSet:
             return self.__add__(d2, shuffle=shuffle)
 
 
-class Encoding(Enum):
-    T_1HOT = auto()
-    T_SIGN = auto()
-    T_DENSE = auto()
-
-
 class CategoricalDataSet(DataSet):
     def __init__(self, *args,
                  y_encoding: Encoding = Encoding.T_DENSE,
+                 n_classes: Optional[int] = None,
                  **kwargs):
         super().__init__(*args, **kwargs)
+
         self.y_encoding = y_encoding
-        if y_encoding == Encoding.T_DENSE:
+        if n_classes is not None:
+            self.n_classes = n_classes
+        elif y_encoding == Encoding.T_DENSE:
             self.n_classes = self.get_y_categories().ravel().shape[0]
         elif y_encoding == Encoding.T_1HOT:
             self.n_classes = self.y.shape[-1]
@@ -163,6 +171,7 @@ class CategoricalDataSet(DataSet):
         return type(self)(self.x,
                           self.get_sign_encoded_y(),
                           y_encoding=Encoding.T_SIGN,
+                          n_classes=self.n_classes,
                           shuffle=False)
 
     def get_y_1hot(self):
@@ -183,24 +192,29 @@ class CategoricalDataSet(DataSet):
         return type(self)(self.x,
                           self.get_y_1hot(),
                           y_encoding=Encoding.T_1HOT,
+                          n_classes=self.n_classes,
                           shuffle=False)
 
     def get_y_categories(self):
         assert self.y_encoding == Encoding.T_DENSE
         return np.unique(self.y.ravel())
 
-    def subset(self, index: Union[np.ndarray, int, List, slice],
-               name_mod: Optional[str] = 'subset',
-               shuffle: bool = False) -> 'CategoricalDataSet':
+    def get_y_intID(self):
+        assert self.y_encoding == Encoding.T_DENSE
+        _, y_ids = np.unique(self.y, return_inverse=True)
+        return y_ids
+
+    def new(self, x: np.ndarray, y: np.ndarray,
+            shuffle: bool, name_mod: Optional[str] = None) -> DataSetType:
         if name_mod is None:
             new_name = self.name
         else:
             new_name = self.name + '_' + name_mod
-        return type(self)(self.x[index, :],
-                          self.y[index, :],
-                          shuffle=shuffle,
-                          y_encoding=self.y_encoding,
-                          name=new_name)
+        return CategoricalDataSet(x, y,
+                                  shuffle=shuffle,
+                                  n_classes=self.n_classes,
+                                  y_encoding=self.y_encoding,
+                                  name=new_name)
 
 
 class BaseDataSet(metaclass=ABCMeta):
@@ -240,4 +254,3 @@ class FixedDataSet(BaseDataSet):
     def next_batch(self, mb_size: int,
                    progress: Tuple[int, int]) -> (Tuple[int, int], DataSetType):
         pass
-
