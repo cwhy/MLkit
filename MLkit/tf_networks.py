@@ -205,7 +205,7 @@ def deconv64(_in: Tensor):
 
 
 def conv28(x__: Tensor, n_out: int) -> Tensor:
-    # In: 28x28 to 32x32
+    # In: 28x28 <= shape <= 32x32
     net = tf.layers.conv2d(x__, 16, 5, activation=tf.nn.relu, name='conv1')
     net = tf.layers.max_pooling2d(net, 2, 2, name='pool1')
     net = tf.layers.conv2d(net, 64, 5, activation=tf.nn.relu, name='conv2')

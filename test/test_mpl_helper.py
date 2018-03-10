@@ -11,7 +11,7 @@ if test_watch:
 
     def shuffle_set(_ds):
         new_set = CategoricalDataSet(_ds.x, _ds.y,
-                                     y_encoding=_ds.y_encoding,
+                                     y_in_encoding=_ds.y_encoding,
                                      shuffle=True)
         return new_set
 

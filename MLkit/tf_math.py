@@ -47,4 +47,16 @@ def accuracy(y_hat: tf.Tensor, y: tf.Tensor) -> tf.Tensor:
 def n_wrong(y_hat: tf.Tensor, y: tf.Tensor) -> tf.Tensor:
     return tf.reduce_sum(
         tf.cast(tf.not_equal(tf.argmax(y_hat, 1),
-                             tf.argmax(y, 1)), tf.float32))
+                             tf.argmax(y, 1)), tf.int32))
+
+
+def n_wrong_cat(y_hat: tf.Tensor, y: tf.Tensor) -> tf.Tensor:
+    out = []
+    for c in range(y_hat.shape[-1]):
+        n_wrong_c = tf.logical_and(
+            tf.not_equal(tf.argmax(y_hat, 1), tf.argmax(y, 1)),
+            tf.equal(tf.argmax(y, 1), c))
+        out.append(tf.reduce_sum(
+            tf.cast(n_wrong_c, tf.int32),
+            axis=0))
+    return out

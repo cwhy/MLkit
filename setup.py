@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
     name='MLkit',
-    version='0.0.1dev',
+    version='0.0.2dev',
     packages=['MLkit'],
     url='',
     license='GPL',
