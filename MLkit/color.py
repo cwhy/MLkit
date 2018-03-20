@@ -5,7 +5,7 @@ From toy_data:
 """
 
 import colorsys
-from typing import List, Tuple, Union
+from typing import List, Tuple, Union, Optional
 
 import numpy as np
 import numpy.random as rnd
@@ -76,12 +76,14 @@ def get_N_by_hue(N: int, s: float = 0.7, v: float = 0.7,
 
 
 def get_N(N: int, s: float = 0.7, l_range: Tuple[float, float] = (0.2, 0.7),
+          phase: Optional[float] = None,
           return_float: bool = True) -> Union[List[ColorF], List[ColorInt]]:
-    phase = rnd.random()
+    if phase is None:
+        phase = rnd.random()
     HLS_tuples = list()
     l = np.linspace(l_range[0], l_range[1], N)
     for i in range(N):
-        hue = (((i + rnd.random() / 2) / N) + phase) % 1
+        hue = (i / N + phase) % 1
         HLS_tuples.append((hue, l[i], s))
 
     if return_float:

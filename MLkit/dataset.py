@@ -235,13 +235,10 @@ class CategoricalDataSet(DataSet):
             else:
                 self.category_names = category_names
 
-        # color_gen = get_color_gen(shuffle=(not self.fix_color))
-        # self.class_colors = [next(color_gen) for c in range(self.n_classes)]
-        # print(self.class_colors)
         if class_colors is not None:
             self.class_colors = class_colors
         else:
-            self.class_colors: ColorF = get_N(self.n_classes)
+            self.class_colors: ColorF = get_N(self.n_classes, phase=0.4)
         self.c = (
                 self.get_y_1hot()[:, :, np.newaxis] * np.array(
             [self.class_colors])).sum(axis=1)
