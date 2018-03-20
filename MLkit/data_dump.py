@@ -7,6 +7,7 @@ import json
 import pickle
 import os
 import os.path as op
+from shutil import copyfile
 
 
 def save_data(info_dict: Dict[str, Any],
@@ -42,3 +43,12 @@ def load_data(data_dir: str, data_uid: str) -> Dict[str, Any]:
     with open(op.join(data_dir, data_uid, 'data.pkl'), 'rb') as file_:
         data = pickle.load(file_)
     return data
+
+
+def load_info(data_dir: str, data_uid: str) -> Dict[str, Any]:
+    with open(op.join(data_dir, 'data_info.json')) as file_:
+        return json.load(file_)
+
+def copy_info(data_dir: str, data_uid: str, out_dir: str) -> None:
+    copyfile(op.join(data_dir, data_uid, 'data_info.json'),
+             op.join(out_dir, 'data_info.json'))

@@ -29,19 +29,23 @@ ColorInt = Tuple[int, int, int]
 Color = Union[ColorF, ColorInt]
 
 
-def get_color_gen(return_float: bool = True) -> Color:
+def get_color_gen(return_float: bool = True,
+                  shuffle: bool = False) -> Color:
     i = -1
+    _color_loop = color_loop.copy()
+    if shuffle:
+        rnd.shuffle(_color_loop)
     while True:
         i += 1
-        if i == len(color_loop):
+        if i == len(_color_loop):
             i = 0
         if return_float:
-            yield int2float(color_loop[i])
+            yield int2float(_color_loop[i])
         else:
-            yield color_loop[i]
+            yield _color_loop[i]
 
 
-def mapTuple3(f, t: Tuple):
+def mapTuple3(f, t: Tuple) -> Tuple:
     return f(t[0]), f(t[1]), f(t[2])
 
 
@@ -57,15 +61,18 @@ def int2hex(rgb_color: ColorInt) -> str:
     return "#{0:02x}{1:02x}{2:02x}".format(*rgb_color)
 
 
-def get_N_by_hue(N, s=0.7, v=0.7):
+def get_N_by_hue(N: int, s: float = 0.7, v: float = 0.7,
+                 return_float: bool = True) -> Union[List[ColorF], List[ColorInt]]:
     phase = rnd.random()
     HSV_tuples = list()
     for x in range(N):
         hue = (((x + rnd.random() / 2) / N) + phase) % 1
         HSV_tuples.append((hue, s, v))
-
-    colors = [float2int(colorsys.hsv_to_rgb(*hsv)) for hsv in HSV_tuples]
-    return colors
+    if return_float:
+        return [colorsys.hsv_to_rgb(*hsv) for hsv in HSV_tuples]
+    else:
+        colors = [float2int(colorsys.hsv_to_rgb(*hsv)) for hsv in HSV_tuples]
+        return colors
 
 
 def darker(color_int: ColorInt, intensity=1.5) -> ColorInt:
@@ -92,11 +99,11 @@ def create_l_ramp_by_color(resolution: int,
 def create_s_ramp_by_color(resolution: int,
                            color: ColorInt,
                            s_range: (float, float) = (0.05, 0.85),
-                           l_range: (float, float) = (0.4, 0.6)):
+                           l_range: (float, float) = (0.4, 0.6)) -> [ColorInt]:
     h, l, _ = colorsys.rgb_to_hls(*int2float(color))
-    l = min(max(l, l_range[0]), l_range[1])
+    l_n = min(max(l, l_range[0]), l_range[1])
     s_ramp = np.linspace(s_range[1], s_range[0], resolution)
-    return [float2int(colorsys.hls_to_rgb(h, l, s)) for s in s_ramp]
+    return [float2int(colorsys.hls_to_rgb(h, l_n, s)) for s in s_ramp]
 
 
 def map_color(arr: List[float], base_color, color_res=256, satur=False) -> List[str]:

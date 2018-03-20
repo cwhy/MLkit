@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 from typing import List, Union, Optional, Tuple
 import numpy as np
-from MLkit.color import get_color_gen
+from MLkit.color import get_color_gen, get_N_by_hue, ColorF
 from enum import Enum, auto
 
 
@@ -92,7 +92,7 @@ class DataSet(BaseDataSet):
         if name is not None:
             self._name = name
         else:
-            self._name = "Unnamed"
+            self._name = "Unnamed_DataSet"
 
         if dim_X is not None:
             self._dim_X = dim_X
@@ -122,10 +122,14 @@ class DataSet(BaseDataSet):
     def subset(self, index: Union[np.ndarray, int, List, slice],
                name_mod: Optional[str] = 'subset',
                shuffle: bool = False) -> DataSetType:
+        if name_mod is None:
+            new_name = self.name
+        else:
+            new_name = self.name + '_' + name_mod
         return self.new(self.x[index, :], self.y[index, :], shuffle,
                         dim_X=self.dim_X,
                         dim_Y=self.dim_Y,
-                        name_mod=name_mod)
+                        name=new_name)
 
     def sample(self, size, name_mod: Optional[str] = 'sample') -> DataSetType:
         _idx = np.random.randint(self.n_samples, size=size)
@@ -135,7 +139,7 @@ class DataSet(BaseDataSet):
                      name_mods: Optional[Tuple[str, str]] = None):
         part_1_size = int(ratio * self.n_samples)
         part_1_idx = np.random.choice(self.n_samples, size=part_1_size, replace=False)
-        part_2_idx = [i for i in range(self.n_samples) if i not in part_1_idx]
+        part_2_idx = np.array([i for i in range(self.n_samples) if i not in part_1_idx])
         if name_mods is None:
             return (self.subset(part_1_idx),
                     self.subset(part_2_idx))
@@ -156,20 +160,21 @@ class DataSet(BaseDataSet):
 
         return (epoch, marker), self.subset(_ids)
 
+    def rename(self, name):
+        return self.new(self.x, self.y, shuffle=False, name=name)
+
     def new(self, x: np.ndarray, y: np.ndarray,
             shuffle: bool,
             dim_X: Dimensions = None,
             dim_Y: Dimensions = None,
-            name_mod: Optional[str] = None) -> DataSetType:
-        if name_mod is None:
-            new_name = self.name
-        else:
-            new_name = self.name + '_' + name_mod
+            name: Optional[str] = None) -> DataSetType:
+        if name is None:
+            name = self.name
         return DataSet(x, y,
                        dim_X=dim_X,
                        dim_Y=dim_Y,
                        shuffle=shuffle,
-                       name=new_name)
+                       name=name)
 
     def __str__(self):
         property_str = ", ".join([f"dim_x={self.dim_x}",
@@ -181,13 +186,11 @@ class DataSet(BaseDataSet):
         return self.__str__()
 
     def __add__(self, d2: DataSetType, shuffle=True) -> DataSetType:
-        if not (self.dim_x == d2.dim_x
-                and self.dim_y == d2.dim_y):
-            raise ValueError("Dimension mismatch")
-        else:
-            x_new = np.vstack((self.x, d2.x))
-            y_new = np.vstack((self.y, d2.y))
-            return type(self)(x_new, y_new, shuffle=shuffle)
+        assert self.dim_x == d2.dim_x
+        assert self.dim_y == d2.dim_y
+        x_new = np.vstack((self.x, d2.x))
+        y_new = np.vstack((self.y, d2.y))
+        return self.new(x_new, y_new, shuffle=shuffle)
 
     def __radd__(self, d2, shuffle=True):
         if d2 == 0:
@@ -200,6 +203,7 @@ class CategoricalDataSet(DataSet):
     def __init__(self, *args,
                  y_in_encoding: Encoding = Encoding.T_NAME,
                  n_classes: Optional[int] = None,
+                 class_colors: Optional[ColorF] = None,
                  category_names: Optional[List[Union[str]]] = None,
                  **kwargs):
         super().__init__(*args, **kwargs)
@@ -207,6 +211,7 @@ class CategoricalDataSet(DataSet):
         if y_in_encoding == Encoding.T_NAME and self.dim_y == 1:
             assert category_names is None
             _ids, self.y = np.unique(self.y, return_inverse=True)
+            self.y = self.y[:, np.newaxis]
             self.category_names = list(map(str, _ids))
             self.y_encoding = Encoding.T_DENSE
             self.n_classes = len(_ids)
@@ -230,8 +235,13 @@ class CategoricalDataSet(DataSet):
             else:
                 self.category_names = category_names
 
-        color_gen = get_color_gen()
-        self.class_colors = [next(color_gen) for c in range(self.n_classes)]
+        # color_gen = get_color_gen(shuffle=(not self.fix_color))
+        # self.class_colors = [next(color_gen) for c in range(self.n_classes)]
+        # print(self.class_colors)
+        if class_colors is not None:
+            self.class_colors = class_colors
+        else:
+            self.class_colors: ColorF = get_N_by_hue(self.n_classes)
         self.c = (
                 self.get_y_1hot()[:, :, np.newaxis] * np.array(
             [self.class_colors])).sum(axis=1)
@@ -325,24 +335,28 @@ class CategoricalDataSet(DataSet):
             dim_Y: Dimensions = None,
             y_encoding: Optional[Encoding] = None,
             n_classes: Optional[int] = None,
-            name_mod: Optional[str] = None) -> DataSetType:
-        if name_mod is None:
+            name: Optional[str] = None) -> 'CategoricalDataSet':
+        if name is None:
             new_name = self.name
         else:
-            new_name = self.name + '_' + name_mod
+            new_name = name
         if y_encoding is None:
             y_encoding = self.y_encoding
         if n_classes is None:
             n_classes = self.n_classes
 
         return CategoricalDataSet(x, y,
-                                  dim_X=dim_X,
-                                  dim_Y=dim_Y,
                                   shuffle=shuffle,
                                   n_classes=n_classes,
                                   category_names=self.category_names,
+                                  class_colors=self.class_colors,
                                   y_in_encoding=y_encoding,
+                                  dim_X=dim_X,
+                                  dim_Y=dim_Y,
                                   name=new_name)
+
+    def __add__(self, d2: DataSetType, shuffle=True) -> 'CategoricalDataSet':
+        raise NotImplementedError('Not Properly implemented')
 
 
 class FixedDataSet(BaseDataSet):

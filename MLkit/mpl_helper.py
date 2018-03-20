@@ -13,9 +13,16 @@ AxesSubplot = Axes
 Vector = Union[np.ndarray, List, Tuple]
 
 mpl.rcParams["font.sans-serif"] = ["Fira Sans", "Candara",
-                                   "Calibri", "Segoe", "Segoe UI",
+                                   "Segoe", "Segoe UI",
                                    "Optima", "Arial"]
 mpl.rcParams["font.family"] = "sans-serif"
+mpl.rcParams['mathtext.fontset'] = 'custom'
+mpl.rcParams['mathtext.rm'] = 'Fira Sans'
+mpl.rcParams['mathtext.sf'] = 'Fira Sans'
+mpl.rcParams['mathtext.cal'] = 'Fira Sans'
+mpl.rcParams['mathtext.it'] = 'Fira Sans:normalitalic'
+mpl.rcParams['mathtext.bf'] = 'Fira Sans:bold'
+mpl.rcParams['mathtext.tt'] = 'Fira Code:medium'
 
 
 def visualize_matrix(mat: np.ndarray,
@@ -160,3 +167,18 @@ def bounded_line(p1: Vector, p2: Vector,
             return p1[0] + 1 / k * (y - p1[1])
 
         return bounded_f_line(f, inv_f, _ax, **kwargs)
+
+
+def cross_dim_line_plot(data: CategoricalDataSet,
+                        size: Tuple[int, int] = (10, 4),
+                        sample: Optional[int]=None) -> Figure:
+    if sample:
+        data = data.sample(sample)
+    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=size)
+    ax.plot(data.x.T, marker='.', linewidth=1, linestyle=':')
+    ax.set_xticks(range(data.dim_x))
+    ax.set_xticklabels([f"$x_{i}$" for i in range(data.dim_x)])
+    ax.set_title(data.name)
+    for i, _l in enumerate(ax.lines):
+        _l.set_color(data.c[i, :])
+    return fig
