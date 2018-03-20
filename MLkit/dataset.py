@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 from typing import List, Union, Optional, Tuple
 import numpy as np
-from MLkit.color import get_color_gen, get_N_by_hue, ColorF
+from MLkit.color import get_N, ColorF
 from enum import Enum, auto
 
 
@@ -241,7 +241,7 @@ class CategoricalDataSet(DataSet):
         if class_colors is not None:
             self.class_colors = class_colors
         else:
-            self.class_colors: ColorF = get_N_by_hue(self.n_classes)
+            self.class_colors: ColorF = get_N(self.n_classes)
         self.c = (
                 self.get_y_1hot()[:, :, np.newaxis] * np.array(
             [self.class_colors])).sum(axis=1)

@@ -23,6 +23,7 @@ mpl.rcParams['mathtext.cal'] = 'Fira Sans'
 mpl.rcParams['mathtext.it'] = 'Fira Sans:normalitalic'
 mpl.rcParams['mathtext.bf'] = 'Fira Sans:bold'
 mpl.rcParams['mathtext.tt'] = 'Fira Code:medium'
+plt.rc('grid', linestyle="--", color='black', alpha=0.1)
 
 
 def visualize_matrix(mat: np.ndarray,
@@ -170,14 +171,25 @@ def bounded_line(p1: Vector, p2: Vector,
 
 
 def cross_dim_line_plot(data: CategoricalDataSet,
-                        size: Tuple[int, int] = (10, 4),
+                        size: Tuple[int, int] = None,
+                        dpi: int = 300,
                         sample: Optional[int]=None) -> Figure:
-    if sample:
+    if sample is not None:
         data = data.sample(sample)
+    if size is None:
+        width = data.dim_x / 2.5 + 2
+        height = 4.5
+        size = (width, height)
     fig, ax = plt.subplots(nrows=1, ncols=1, figsize=size)
     ax.plot(data.x.T, marker='.', linewidth=1, linestyle=':')
     ax.set_xticks(range(data.dim_x))
-    ax.set_xticklabels([f"$x_{i}$" for i in range(data.dim_x)])
+    ax.set_xticklabels([f"$x_{{{i}}}$" for i in range(data.dim_x)])
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['left'].set_visible(False)
+    ax.tick_params('both', direction='in')
+    ax.margins(0.4/width, 0.4/height)
+    ax.grid()
     ax.set_title(data.name)
     for i, _l in enumerate(ax.lines):
         _l.set_color(data.c[i, :])

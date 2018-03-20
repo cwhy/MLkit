@@ -75,6 +75,22 @@ def get_N_by_hue(N: int, s: float = 0.7, v: float = 0.7,
         return colors
 
 
+def get_N(N: int, s: float = 0.7, l_range: Tuple[float, float] = (0.2, 0.7),
+          return_float: bool = True) -> Union[List[ColorF], List[ColorInt]]:
+    phase = rnd.random()
+    HLS_tuples = list()
+    l = np.linspace(l_range[0], l_range[1], N)
+    for i in range(N):
+        hue = (((i + rnd.random() / 2) / N) + phase) % 1
+        HLS_tuples.append((hue, l[i], s))
+
+    if return_float:
+        return [colorsys.hls_to_rgb(*hls) for hls in HLS_tuples]
+    else:
+        colors = [float2int(colorsys.hls_to_rgb(*hls)) for hls in HLS_tuples]
+        return colors
+
+
 def darker(color_int: ColorInt, intensity=1.5) -> ColorInt:
     (h, s, v) = colorsys.rgb_to_hsv(*int2float(color_int))
     v /= intensity
