@@ -14,7 +14,7 @@ def save_data(info_dict: Dict[str, Any],
               data_dict: [str, Any],
               out_dir: str,
               uid_len: Optional[int] = 4,
-              use_toml: bool =False) -> None:
+              use_toml: bool =False) -> str:
     _time = strftime("(%z) %Hh:%Mm:%Ss, %d/%m/%Y", localtime())
     time_tag = strftime("%H:%M_%d%m", localtime())
     g_info = {'time': _time}
@@ -37,6 +37,7 @@ def save_data(info_dict: Dict[str, Any],
     with open(op.join(data_dir, 'data.pkl'), 'wb') as file_:
         pickle.dump(data_dict, file_, pickle.HIGHEST_PROTOCOL)
     print(f'Saved {data_dir} at {_time}')
+    return data_dir
 
 
 def load_data(data_dir: str, data_uid: str) -> Dict[str, Any]:

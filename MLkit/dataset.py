@@ -353,7 +353,14 @@ class CategoricalDataSet(DataSet):
                                   name=new_name)
 
     def __add__(self, d2: DataSetType, shuffle=True) -> 'CategoricalDataSet':
-        raise NotImplementedError('Not Properly implemented')
+        assert self.dim_x == d2.dim_x
+        if (self.y_encoding == d2.y_encoding
+            and self.category_names == d2.category_names):
+            x_new = np.vstack((self.x, d2.x))
+            y_new = np.vstack((self.y, d2.y))
+            return self.new(x_new, y_new, shuffle=shuffle)
+        else:
+            raise NotImplementedError('Not Properly implemented')
 
 
 class FixedDataSet(BaseDataSet):
