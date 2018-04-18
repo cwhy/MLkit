@@ -171,15 +171,17 @@ def bounded_line(p1: Vector, p2: Vector,
 
 
 def cross_dim_line_plot(data: CategoricalDataSet,
-                        size: Tuple[int, int] = None,
+                        size: Optional[Tuple[float, float]] = None,
                         dpi: int = 300,
                         sample: Optional[int]=None) -> Tuple[Figure, AxesSubplot]:
     if sample is not None:
         data = data.sample(sample)
     if size is None:
-        width = data.dim_x / 2.5 + 2
         height = 4.5
+        width = data.dim_x / 2.5 + 2
         size = (width, height)
+    else:
+        width, height = size
     fig, ax = plt.subplots(nrows=1, ncols=1, figsize=size)
     ax.plot(data.x.T, marker='.', linewidth=1, linestyle=':')
     ax.set_xticks(range(data.dim_x))
