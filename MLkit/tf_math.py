@@ -1,6 +1,6 @@
 import numpy as np
 import tensorflow as tf
-from typing import Union, Callable
+from typing import Union, Callable, List
 
 tf_Tensor = Union[tf.Tensor, tf.Variable, tf.constant]
 
@@ -50,7 +50,7 @@ def n_wrong(y_hat: tf.Tensor, y: tf.Tensor) -> tf.Tensor:
                              tf.argmax(y, 1)), tf.int32))
 
 
-def n_wrong_cat(y_hat: tf.Tensor, y: tf.Tensor) -> tf.Tensor:
+def n_wrong_cat(y_hat: tf.Tensor, y: tf.Tensor) -> List[tf.Tensor]:
     out = []
     for c in range(y_hat.shape[-1]):
         n_wrong_c = tf.logical_and(

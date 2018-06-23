@@ -183,7 +183,7 @@ def cross_dim_line_plot(data: CategoricalDataSet,
         size = (width, height)
     else:
         width, height = size
-    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=size)
+    fig, ax = plt.subplots(nrows=1, ncols=1, dpi=dpi, figsize=size)
     x = np.repeat(np.arange(data.dim_x, dtype=np.float32)[:, np.newaxis],
                   data.n_samples, 1)
     if jitter:

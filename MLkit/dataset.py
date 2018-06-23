@@ -89,6 +89,7 @@ class DataSet(BaseDataSet):
                  name: Optional[str] = None,
                  shuffle: bool = True):
 
+        assert self.x.shape[0] == self.y.shape[0]
         if name is not None:
             self._name = name
         else:
