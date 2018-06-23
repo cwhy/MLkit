@@ -173,6 +173,7 @@ def bounded_line(p1: Vector, p2: Vector,
 def cross_dim_line_plot(data: CategoricalDataSet,
                         size: Optional[Tuple[float, float]] = None,
                         dpi: int = 300,
+                        jitter: bool = True,
                         sample: Optional[int]=None) -> Tuple[Figure, AxesSubplot]:
     if sample is not None:
         data = data.sample(sample)
@@ -183,7 +184,12 @@ def cross_dim_line_plot(data: CategoricalDataSet,
     else:
         width, height = size
     fig, ax = plt.subplots(nrows=1, ncols=1, dpi=dpi, figsize=size)
-    ax.plot(data.x.T, marker='.', linewidth=1, linestyle=':')
+    x = np.repeat(np.arange(data.dim_x, dtype=np.float32)[:, np.newaxis],
+                  data.n_samples, 1)
+    if jitter:
+        x += (np.random.beta(2, 2, size=x.shape) - 0.5) / 2
+    y = data.x.T
+    ax.plot(x, y, marker='.', linewidth=0.5, linestyle=':', markersize=3)
     ax.set_xticks(range(data.dim_x))
     ax.set_xticklabels([f"$x_{{{i}}}$" for i in range(data.dim_x)])
     ax.spines['top'].set_visible(False)
