@@ -44,6 +44,11 @@ def accuracy(y_hat: tf.Tensor, y: tf.Tensor) -> tf.Tensor:
                          tf.argmax(y, 1)), tf.float32))
 
 
+def binary_accuracy(y_hat: tf.Tensor, y: tf.Tensor) -> tf.Tensor:
+    return tf.reduce_mean(
+        tf.cast(tf.equal(y_hat, y), tf.float32))
+
+
 def n_wrong(y_hat: tf.Tensor, y: tf.Tensor) -> tf.Tensor:
     return tf.reduce_sum(
         tf.cast(tf.not_equal(tf.argmax(y_hat, 1),
