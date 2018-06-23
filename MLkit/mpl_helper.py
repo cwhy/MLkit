@@ -182,7 +182,7 @@ def cross_dim_line_plot(data: CategoricalDataSet,
         size = (width, height)
     else:
         width, height = size
-    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=size)
+    fig, ax = plt.subplots(nrows=1, ncols=1, dpi=dpi, figsize=size)
     ax.plot(data.x.T, marker='.', linewidth=1, linestyle=':')
     ax.set_xticks(range(data.dim_x))
     ax.set_xticklabels([f"$x_{{{i}}}$" for i in range(data.dim_x)])

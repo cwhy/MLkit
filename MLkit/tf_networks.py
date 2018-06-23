@@ -4,10 +4,9 @@ from tensorflow.contrib import slim
 import tensorflow.contrib.layers as cl
 from typing import Tuple, List, Optional, Callable
 
+ef = lambda x: tf.expand_dims(x, -1)  # expand forward
+eb = lambda x: tf.expand_dims(x, 0)  # expand backward
 
-
-ef = lambda x: tf.expand_dims(x, -1) # expand forward
-eb = lambda x: tf.expand_dims(x, 0) # expand backward
 
 def xavier_init(size: Tuple[int, int]) -> Tensor:
     in_dim = float(size[0])
@@ -72,13 +71,15 @@ def dense_net(z: Tensor,
     _flow = layer_dense(_flow, n_units[-1], 'fcFinal')
     return _flow
 
-def mini_rnn(_in:Tensor, out_dim_t:int, state_size:int):
+
+def mini_rnn(_in: Tensor, out_dim_t: int, state_size: int):
     cell = tf.contrib.rnn.BasicLSTMCell(state_size)
     rnn_out, _ = tf.nn.dynamic_rnn(cell, tf.expand_dims(_in, -1), dtype=tf.float32)
     W = tf.get_variable('output_embedding', (state_size, out_dim_t),
                         initializer=tf.truncated_normal_initializer())
     out_pred_logit = tf.reduce_sum(ef(rnn_out) * eb(eb(W)), axis=-2)
     return cl.flatten(out_pred_logit)
+
 
 def le_conv_tune(x__: tf.Tensor, n_out: int,
                  activation_fn=tf.nn.relu,
@@ -235,7 +236,7 @@ def conv28(x__: Tensor, n_out: int) -> Tensor:
     return _logits
 
 
-def conv_only28(x__: Tensor, n_out: int, is_train: bool = False) -> Tensor:
+def conv_only28(x__: Tensor, n_out: int) -> Tensor:
     net = tf.layers.conv2d(x__, 32, 4, 1, activation=tf.nn.relu, name='conv1')
     net = tf.layers.conv2d(net, 32, 4, 1, activation=tf.nn.relu, name='conv2')
     net = tf.layers.conv2d(net, 32, 4, 2, activation=tf.nn.relu, name='conv3')
@@ -247,8 +248,9 @@ def conv_only28(x__: Tensor, n_out: int, is_train: bool = False) -> Tensor:
     _logits = net
     return _logits
 
+
 def deconv28(in_: Tensor, is_train: bool = False) -> Tensor:
-    net = tf.layers.dense(in_, 32*4*4, activation=tf.nn.relu,
+    net = tf.layers.dense(in_, 32 * 4 * 4, activation=tf.nn.relu,
                           kernel_initializer=cl.xavier_initializer(uniform=False))
     net = tf.reshape(net, [-1, 4, 4, 32])
     net = tf.layers.conv2d_transpose(net, 32, 4, strides=2, name='deconv1')
@@ -266,9 +268,9 @@ def deconv28(in_: Tensor, is_train: bool = False) -> Tensor:
     return _logits
 
 
-def deconv80(in_: Tensor, out_channels:int=1, is_train: bool = False) -> Tensor:
+def deconv80(in_: Tensor, out_channels: int = 1, is_train: bool = False) -> Tensor:
     size0 = 6
-    net = tf.layers.dense(in_, 64*size0*size0, activation=tf.nn.relu,
+    net = tf.layers.dense(in_, 64 * size0 * size0, activation=tf.nn.relu,
                           kernel_initializer=cl.xavier_initializer(uniform=False))
     net = tf.reshape(net, [-1, size0, size0, 64])
     net = tf.layers.conv2d_transpose(net, 64, 4, strides=1, name='deconv1')
@@ -283,16 +285,18 @@ def deconv80(in_: Tensor, out_channels:int=1, is_train: bool = False) -> Tensor:
     _logits = net
     return _logits
 
+
 def get_variational_layer(_logits: Tensor, dim_z: int) -> Tuple[Tensor, Tensor]:
     Z_mean = tf.layers.dense(_logits, dim_z, activation=None,
                              kernel_initializer=cl.xavier_initializer(uniform=False))
     Z_logvar = tf.layers.dense(_logits, dim_z, activation=None,
                                kernel_initializer=cl.xavier_initializer(uniform=False))
     eps = tf.random_normal(shape=tf.shape(Z_mean))
-    Z = Z_mean + eps*(tf.exp(Z_logvar / 2))
+    Z = Z_mean + eps * (tf.exp(Z_logvar / 2))
 
     kl_losses = 0.5 * tf.reduce_sum(tf.exp(Z_logvar) + Z_mean ** 2 - 1. - Z_logvar, 1)
     return Z, kl_losses
+
 
 # Alias:
 strange_net = conv64
