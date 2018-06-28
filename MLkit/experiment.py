@@ -3,6 +3,7 @@ import os
 import os.path as op
 import uuid
 import h5py
+from time import strftime, localtime
 from typing import Dict, NewType, Any
 import numpy as np
 
@@ -14,6 +15,7 @@ def set_up(data_uid: str, config: Dict[str, Any], save_dir: str) -> ResultFolder
     env = dict()
     env['data_uid'] = data_uid
     env['exp_id'] = uuid.uuid4().hex[:3]
+    env['time'] = strftime("(%z) %Hh:%Mm:%Ss, %d/%m/%Y", localtime())
     env['config'] = config
     folder_name = data_uid + '_' + env['exp_id']
     result_folder = op.join(save_dir, folder_name)
