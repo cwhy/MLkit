@@ -1,7 +1,6 @@
 import setuptools
 from os import path
 
-
 here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
@@ -17,7 +16,7 @@ setuptools.setup(
     url='https://github.com/cwhy/MLkit',
     packages=setuptools.find_packages(),
     classifiers=(
-	"Development Status :: 3 - Alpha",
+        "Development Status :: 3 - Alpha",
         "Intended Audience :: CWhy and his friends",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
