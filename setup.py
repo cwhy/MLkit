@@ -1,7 +1,10 @@
 import setuptools
+from os import path
 
-with open("README.md", "r") as fh:
-    long_description = fh.read()
+
+here = path.abspath(path.dirname(__file__))
+with open(path.join(here, 'README.md'), encoding='utf-8') as f:
+    long_description = f.read()
 
 setuptools.setup(
     name='MLkit',
@@ -14,9 +17,13 @@ setuptools.setup(
     url='https://github.com/cwhy/MLkit',
     packages=setuptools.find_packages(),
     classifiers=(
-        "Programming Language :: Python :: 3",
+	"Development Status :: 3 - Alpha",
+        "Intended Audience :: CWhy and his friends",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
         "License :: OSI Approved :: GPL",
         "Operating System :: OS Independent",
     ),
-    install_requires=['numpy', 'tensorflow', 'torch', 'toml', 'matplotlib', 'h5py']
+    python_requires='>=3.6',
+    install_requires=['numpy', 'tensorflow-gpu', 'torch', 'toml', 'matplotlib', 'h5py']
 )
