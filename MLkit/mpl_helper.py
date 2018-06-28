@@ -16,6 +16,10 @@ mpl.rcParams["font.sans-serif"] = ["Fira Sans", "Candara",
                                    "Segoe", "Segoe UI",
                                    "Optima", "Arial"]
 mpl.rcParams["font.family"] = "sans-serif"
+mpl.rcParams["font.weight"] = "regular"
+mpl.rcParams['axes.titleweight'] = "regular"
+# mpl.rcParams['figure.titleweight'] = "medium"
+mpl.rcParams["axes.labelweight"] = "regular"
 mpl.rcParams['mathtext.fontset'] = 'custom'
 mpl.rcParams['mathtext.rm'] = 'Fira Sans'
 mpl.rcParams['mathtext.sf'] = 'Fira Sans'
