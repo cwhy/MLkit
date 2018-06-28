@@ -12,7 +12,7 @@ from typing import Optional, Tuple, List, Callable, Union
 AxesSubplot = Axes
 Vector = Union[np.ndarray, List, Tuple]
 
-mpl.rcParams["font.sans-serif"] = ["Fira Sans", "Candara",
+mpl.rcParams["font.sans-serif"] = ["Fira Sans Regular", "Candara",
                                    "Segoe", "Segoe UI",
                                    "Optima", "Arial"]
 mpl.rcParams["font.family"] = "sans-serif"
