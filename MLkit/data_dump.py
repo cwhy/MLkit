@@ -13,6 +13,7 @@ from shutil import copyfile
 def save_data(info_dict: Dict[str, Any],
               data_dict: [str, Any],
               out_dir: str,
+              name: Optional[str],
               uid_len: Optional[int] = 4,
               use_toml: bool =False) -> str:
     _time = strftime("(%z) %Hh:%Mm:%Ss, %d/%m/%Y", localtime())

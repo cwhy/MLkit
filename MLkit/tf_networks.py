@@ -229,6 +229,7 @@ def conv28(x__: Tensor, n_out: int) -> Tensor:
     net = tf.layers.max_pooling2d(net, 2, 2, name='pool1')
     net = tf.layers.conv2d(net, 64, 5, activation=tf.nn.relu, name='conv2')
     net = tf.layers.max_pooling2d(net, 2, 2, name='pool2')
+    # 15x15 <= shape
     net = cl.flatten(net)
     net = tf.layers.dense(net, n_out, activation=None,
                           kernel_initializer=cl.xavier_initializer(uniform=False))

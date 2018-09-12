@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from typing import List, Union, Optional, Tuple
+from typing import List, Union, Optional, Tuple, Callable
 import numpy as np
 from MLkit.color import get_N, ColorF
 from enum import Enum, auto
@@ -112,6 +112,11 @@ class DataSet(BaseDataSet):
             _idx = np.random.permutation(self.n_samples)
             self.x = self.x[_idx, :]
             self.y = self.y[_idx, :]
+
+    def update_x(self, update_fn: Callable[[np.ndarray], np.ndarray]):
+        x_new = update_fn(self.x)
+        assert x_new.shape[0] == self.x.shape[0]
+        return self.new(x_new, self.y, shuffle=False)
 
     def get_x_by_y(self, y):
         idx = np.ravel(self.y == y)

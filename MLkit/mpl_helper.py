@@ -12,6 +12,10 @@ from typing import Optional, Tuple, List, Callable, Union
 AxesSubplot = Axes
 Vector = Union[np.ndarray, List, Tuple]
 
+mpl.rcParams['savefig.transparent'] = True
+mpl.rcParams['axes.spines.top'] = False
+mpl.rcParams['axes.spines.right'] = False
+
 mpl.rcParams["font.sans-serif"] = ["Fira Sans Regular", "Candara",
                                    "Segoe", "Segoe UI",
                                    "Optima", "Arial"]
