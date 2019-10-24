@@ -7,7 +7,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setuptools.setup(
     name='MLkit',
-    version='0.0.3dev',
+    version='0.1.0dev',
     author='CWhy',
     author_email='chenyu.nus@gmail.com',
     description='Some home-brew tools for machine learning',
@@ -25,5 +25,5 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ),
     python_requires='>=3.6',
-    install_requires=['numpy', 'tensorflow-gpu', 'torch', 'toml', 'matplotlib', 'h5py']
+    install_requires=['numpy', 'torch', 'toml', 'matplotlib', 'h5py']
 )
