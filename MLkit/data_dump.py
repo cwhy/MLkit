@@ -15,7 +15,7 @@ def save_data(info_dict: Dict[str, Any],
               out_dir: str,
               name: Optional[str],
               uid_len: Optional[int] = 4,
-              use_toml: bool =False) -> str:
+              use_toml: bool = False) -> str:
     _time = strftime("(%z) %Hh:%Mm:%Ss, %d/%m/%Y", localtime())
     time_tag = strftime("%H:%M_%d%m", localtime())
     g_info = {'time': _time}
@@ -50,6 +50,7 @@ def load_data(data_dir: str, data_uid: str) -> Dict[str, Any]:
 def load_info(data_dir: str, data_uid: str) -> Dict[str, Any]:
     with open(op.join(data_dir, 'data_info.json')) as file_:
         return json.load(file_)
+
 
 def copy_info(data_dir: str, data_uid: str, out_dir: str) -> None:
     copyfile(op.join(data_dir, data_uid, 'data_info.json'),

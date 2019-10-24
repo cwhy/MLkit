@@ -65,3 +65,17 @@ def n_wrong_cat(y_hat: tf.Tensor, y: tf.Tensor) -> List[tf.Tensor]:
             tf.cast(n_wrong_c, tf.int32),
             axis=0))
     return out
+
+
+def hinge_loss(y_hat, y):
+    return tf.nn.relu(1 - y_hat * y)
+
+
+def sqr_hinge_loss(y_hat, y):
+    return hinge_loss(y_hat, y) ** 2
+
+
+def log_loss(y_logit, y):
+    y_prob = y / 2 + 0.5
+    scewl = tf.nn.sigmoid_cross_entropy_with_logits
+    return scewl(logits=y_logit, labels=y_prob)

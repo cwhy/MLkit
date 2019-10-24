@@ -4,7 +4,7 @@ import os.path as op
 import uuid
 import h5py
 from time import strftime, localtime
-from typing import Dict, NewType, Any
+from typing import Dict, NewType, Any, Optional
 import numpy as np
 import matplotlib as mpl
 
@@ -14,18 +14,31 @@ from MLkit.mpl_helper import plt
 ResultFolder = NewType('ResultFolder', str)
 
 
-def set_up(data_uid: str, config: Dict[str, Any], save_dir: str) -> ResultFolder:
-    env = dict()
-    env['data_uid'] = data_uid
-    env['exp_id'] = uuid.uuid4().hex[:3]
-    env['time'] = strftime("(%z) %Hh:%Mm:%Ss, %d/%m/%Y", localtime())
-    env['config'] = config
-    folder_name = data_uid + '_' + env['exp_id']
-    result_folder = op.join(save_dir, folder_name)
-    os.makedirs(result_folder, exist_ok=True)
-    with open(op.join(result_folder, 'config.json'), 'w') as f_:
-        json.dump(env, f_, indent=4)
-    return ResultFolder(result_folder)
+def set_up(data_dir: str,
+           config: Dict[str, Any],
+           save_dir: str,
+           name: Optional[str]=None) -> ResultFolder:
+    try:
+        with open(op.join(data_dir, "data_info.json")) as f_:
+            data_info = json.load(f_)
+    except FileNotFoundError:
+        raise Exception(f"Data in folder {data_dir} not found")
+    else:
+        env = dict()
+        env['data_info'] = data_info
+        data_uid = data_info["Generation Information"]["uid"]
+        env['exp_id'] = uuid.uuid4().hex[:3]
+        env['time'] = strftime("(%z) %Hh:%Mm:%Ss, %d/%m/%Y", localtime())
+        env['config'] = config
+        if name is not None:
+            folder_name = name
+        else:
+            folder_name = data_uid + '_' + env['exp_id']
+        result_folder = op.join(save_dir, folder_name)
+        os.makedirs(result_folder, exist_ok=True)
+        with open(op.join(result_folder, 'config.json'), 'w') as f_:
+            json.dump(env, f_, indent=4)
+        return ResultFolder(result_folder)
 
 
 def save(result_folder: ResultFolder,
@@ -62,7 +75,7 @@ def load_vars(result_folder: ResultFolder):
     return vars_
 
 
-def save_log_plot_lines(logger, log_names, out_dir: ResultFolder):
+def log_plots(logger, log_names, out_dir: ResultFolder):
     for log_key, log_name in log_names:
         fig, ax = plt.subplots(1, 1, figsize=(8, 3.375), dpi=450)
         if 'loss' in log_key:
