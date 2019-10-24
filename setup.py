@@ -20,6 +20,7 @@ setuptools.setup(
         "Intended Audience :: CWhy and his friends",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
         "License :: OSI Approved :: GPL",
         "Operating System :: OS Independent",
     ),
